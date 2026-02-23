@@ -26,6 +26,9 @@ jobs:
           pip install tabulate
 
       - name: 시세 데이터 수집
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: 1
         run: python scripts/fetch_prices.py
 
       - name: 변경사항 커밋 & 푸시

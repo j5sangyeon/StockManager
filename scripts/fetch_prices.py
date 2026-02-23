@@ -1,8 +1,14 @@
+# -*- coding: utf-8 -*-
 """
 GitHub Actions가 주기적으로 실행하는 주가 데이터 수집 스크립트.
 watchlist.json의 종목 목록을 읽어 pykrx로 시세를 수집하고
 data/prices.json에 저장합니다.
 """
+import sys
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+
 import json
 import os
 from datetime import datetime
