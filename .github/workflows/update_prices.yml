@@ -2,42 +2,36 @@ name: 📈 주가 데이터 업데이트
 
 on:
   schedule:
-    # 한국 장 운영시간: KST 09:00~15:30 = UTC 00:00~06:30
-    # 장 중 30분마다 업데이트
-    - cron: '0,30 0-5 * * 1-5'
-    # 장 마감 시각 (KST 15:30 = UTC 06:30) 최종 업데이트
-    - cron: '30 6 * * 1-5'
-  workflow_dispatch:   # GitHub Actions 탭에서 수동 실행 가능
-
-permissions:
-  contents: write      # data/prices.json 커밋을 위해 쓰기 권한 필요
+    - cron: '0 0,2,4,6 * * 1-5'  # KST 09:00~15:00 (UTC 기준)
+  workflow_dispatch:
 
 jobs:
-  update-prices:
+  update:
     runs-on: ubuntu-latest
-
     steps:
-      - name: 📥 코드 체크아웃
-        uses: actions/checkout@v4
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v3
 
-      - name: 🐍 Python 3.11 설치
-        uses: actions/setup-python@v5
+      - name: Python 설치
+        uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      - name: 📦 패키지 설치
+      - name: 패키지 설치
         run: |
-          pip install pykrx --no-deps
-          pip install pandas deprecated multipledispatch requests
+          python -m pip install --upgrade pip
+          pip install matplotlib
+          pip install pykrx
+          pip install pandas
+          pip install tabulate
 
-      - name: 📊 주가 데이터 수집
+      - name: 시세 데이터 수집
         run: python scripts/fetch_prices.py
 
-      - name: 💾 변경사항 커밋 & 푸시
+      - name: 변경사항 커밋 & 푸시
         run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
           git add data/prices.json
-          git diff --staged --quiet || \
-            git commit -m "📈 주가 업데이트: $(TZ='Asia/Seoul' date +'%Y-%m-%d %H:%M KST')"
+          git diff --staged --quiet || git commit -m "📈 주가 데이터 자동 업데이트"
           git push
