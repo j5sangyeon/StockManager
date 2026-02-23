@@ -1,0 +1,6 @@
+flask
+pykrx
+pandas
+tabulate
+deprecated
+multipledispatch

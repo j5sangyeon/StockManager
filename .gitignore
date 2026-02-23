@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# Flask 로컬 개발용 (GitHub Pages 배포 불필요)
+# app.py, stock_manager.py, templates/ 는 로컬 전용
+
+# 개발 환경
+venv/
+.venv/

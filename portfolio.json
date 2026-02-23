@@ -1,0 +1,67 @@
+{
+  "watchlist": [
+    {
+      "ticker": "000660",
+      "name": "SK하이닉스",
+      "quantity": 5,
+      "buy_price": 198369,
+      "sell_target": 956000
+    },
+    {
+      "ticker": "028260",
+      "name": "삼성물산",
+      "quantity": 0,
+      "buy_price": 0,
+      "sell_target": 0
+    },
+    {
+      "ticker": "064350",
+      "name": "현대로템",
+      "quantity": 0,
+      "buy_price": 0,
+      "sell_target": 0
+    },
+    {
+      "ticker": "079550",
+      "name": "LIG넥스원",
+      "quantity": 0,
+      "buy_price": 0,
+      "sell_target": 0
+    },
+    {
+      "ticker": "140860",
+      "name": "파크시스템스",
+      "quantity": 0,
+      "buy_price": 0,
+      "sell_target": 0
+    },
+    {
+      "ticker": "469160",
+      "name": "PLUS 고배당주",
+      "quantity": 0,
+      "buy_price": 0,
+      "sell_target": 0
+    },
+    {
+      "ticker": "449450",
+      "name": "SOL금융지주플러스고배당",
+      "quantity": 0,
+      "buy_price": 0,
+      "sell_target": 0
+    },
+    {
+      "ticker": "411060",
+      "name": "ACE KRX금현물",
+      "quantity": 0,
+      "buy_price": 0,
+      "sell_target": 0
+    },
+    {
+      "ticker": "005930",
+      "name": "삼성전자",
+      "quantity": 0,
+      "buy_price": 0,
+      "sell_target": 0
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "stocks": [
+    {"ticker": "000660", "name": "SK하이닉스"},
+    {"ticker": "028260", "name": "삼성물산"},
+    {"ticker": "064350", "name": "현대로템"},
+    {"ticker": "079550", "name": "LIG넥스원"},
+    {"ticker": "140860", "name": "파크시스템스"},
+    {"ticker": "469160", "name": "PLUS 고배당주"},
+    {"ticker": "449450", "name": "SOL금융지주플러스고배당"},
+    {"ticker": "411060", "name": "ACE KRX금현물"},
+    {"ticker": "005930", "name": "삼성전자"}
+  ]
+}

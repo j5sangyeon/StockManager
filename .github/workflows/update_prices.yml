@@ -1,0 +1,43 @@
+name: 📈 주가 데이터 업데이트
+
+on:
+  schedule:
+    # 한국 장 운영시간: KST 09:00~15:30 = UTC 00:00~06:30
+    # 장 중 30분마다 업데이트
+    - cron: '0,30 0-5 * * 1-5'
+    # 장 마감 시각 (KST 15:30 = UTC 06:30) 최종 업데이트
+    - cron: '30 6 * * 1-5'
+  workflow_dispatch:   # GitHub Actions 탭에서 수동 실행 가능
+
+permissions:
+  contents: write      # data/prices.json 커밋을 위해 쓰기 권한 필요
+
+jobs:
+  update-prices:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: 🐍 Python 3.11 설치
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 📦 패키지 설치
+        run: |
+          pip install pykrx --no-deps
+          pip install pandas deprecated multipledispatch requests
+
+      - name: 📊 주가 데이터 수집
+        run: python scripts/fetch_prices.py
+
+      - name: 💾 변경사항 커밋 & 푸시
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/prices.json
+          git diff --staged --quiet || \
+            git commit -m "📈 주가 업데이트: $(TZ='Asia/Seoul' date +'%Y-%m-%d %H:%M KST')"
+          git push
