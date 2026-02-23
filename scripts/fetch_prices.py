@@ -14,9 +14,9 @@ import os
 from datetime import datetime
 from pykrx import stock
 
-BASE_DIR       = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-WATCHLIST_FILE = os.path.join(BASE_DIR, "watchlist.json")
-OUTPUT_FILE    = os.path.join(BASE_DIR, "data", "prices.json")
+BASE_DIR        = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PORTFOLIO_FILE  = os.path.join(BASE_DIR, "portfolio.json")
+OUTPUT_FILE     = os.path.join(BASE_DIR, "data", "prices.json")
 
 
 def fetch_price(ticker: str, name: str) -> dict | None:
@@ -46,8 +46,8 @@ def fetch_price(ticker: str, name: str) -> dict | None:
 
 
 def main():
-    with open(WATCHLIST_FILE, "r", encoding="utf-8") as f:
-        watchlist = json.load(f)["stocks"]
+    with open(PORTFOLIO_FILE, "r", encoding="utf-8") as f:
+        watchlist = json.load(f)["watchlist"]
 
     prices = {}
     for item in watchlist:
