@@ -539,30 +539,56 @@
     const sr = document.getElementById('s-results');
     sr.innerHTML = '<div class="sr-msg"><span class="spin"></span> 검색 중…</div>';
     sr.classList.add('on');
-    try {
-      // KRX Open API로 종목 검색
-      const url = `https://api.stock.naver.com/stock/search?query=${encodeURIComponent(q)}&length=20`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('검색 실패');
-      const json = await res.json();
-      const items = json.stocks || json.result || json.items || [];
-      if (!items.length) {
-        sr.innerHTML = '<div class="sr-msg">검색 결과가 없습니다.</div>';
-        return;
-      }
-      sr.innerHTML = items.slice(0, 30).map(r => {
-        const ticker = r.itemCode || r.code || r.ticker || '';
-        const name   = r.itemName || r.name || r.stockName || '';
-        const market = r.market   || r.stockExchangeType?.name || '';
-        return `<div class="sr-item" onclick="pickResult('${ticker}','${name.replace(/'/g,"\\'")}')">` +
-          `<span class="sr-code">${ticker}</span>` +
-          `<span style="flex:1">${name}</span>` +
-          `<span class="sr-market">${market}</span>` +
-          `</div>`;
-      }).join('');
-    } catch {
-      sr.innerHTML = '<div class="sr-msg" style="color:#e53935">검색 실패 — 종목코드를 직접 입력하세요.</div>';
+
+    // CORS 우회: 여러 공개 API 순차 시도
+    const results = await searchByFinance(q);
+    if (results === null) {
+      sr.innerHTML = '<div class="sr-msg" style="color:#e53935">검색 실패 — 종목코드를 직접 입력하세요.<br><small>(<a href="https://finance.naver.com" target="_blank">네이버 금융</a> 또는 <a href="http://data.krx.co.kr" target="_blank">KRX</a>에서 코드 확인)</small></div>';
+      return;
     }
+    if (!results.length) {
+      sr.innerHTML = '<div class="sr-msg">검색 결과가 없습니다.</div>';
+      return;
+    }
+    sr.innerHTML = results.slice(0, 30).map(r =>
+      `<div class="sr-item" onclick="pickResult('${r.ticker}','${r.name.replace(/'/g,"\\'")}')">` +
+      `<span class="sr-code">${r.ticker}</span>` +
+      `<span style="flex:1">${r.name}</span>` +
+      `<span class="sr-market">${r.market}</span>` +
+      `</div>`
+    ).join('');
+  }
+
+  async function searchByFinance(q) {
+    // 1순위: 네이버 금융 자동완성 (CORS 허용)
+    try {
+      const res = await fetch(
+        `https://ac.stock.naver.com/ac?query=${encodeURIComponent(q)}&target=stock,index,etf,etn,elw,fund,futures,option,coin`,
+        { mode: 'cors' }
+      );
+      if (res.ok) {
+        const json = await res.json();
+        const items = json.items?.[0] || [];
+        if (items.length) {
+          return items.map(r => ({
+            ticker: r[0],
+            name:   r[1],
+            market: r[2] || '',
+          }));
+        }
+      }
+    } catch {}
+
+    // 2순위: portfolio.json에서 로컬 검색 (이미 등록된 종목)
+    try {
+      const kw = q.toLowerCase();
+      const local = portfolio.filter(i =>
+        i.name.toLowerCase().includes(kw) || i.ticker.includes(kw)
+      ).map(i => ({ ticker: i.ticker, name: i.name, market: '내 목록' }));
+      if (local.length) return local;
+    } catch {}
+
+    return null;
   }
 
   function pickResult(ticker, name) {
