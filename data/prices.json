@@ -1,59 +1,59 @@
 {
-  "updated_at": "2026-02-24 01:24:16",
+  "updated_at": "2026-02-24 01:58:11",
   "prices": {
     "000660": {
-      "current_price": 983000,
-      "all_time_high": 984000,
+      "current_price": 995500,
+      "all_time_high": 998000,
       "all_time_high_date": "2026-02-24",
-      "ratio": 99.9
+      "ratio": 99.75
     },
     "028260": {
-      "current_price": 334500,
+      "current_price": 333500,
       "all_time_high": 344500,
       "all_time_high_date": "2026-02-23",
-      "ratio": 97.1
+      "ratio": 96.81
     },
     "064350": {
-      "current_price": 217500,
+      "current_price": 218500,
       "all_time_high": 249500,
       "all_time_high_date": "2025-10-23",
-      "ratio": 87.17
+      "ratio": 87.58
     },
     "079550": {
-      "current_price": 510000,
+      "current_price": 513000,
       "all_time_high": 650000,
       "all_time_high_date": "2025-06-23",
-      "ratio": 78.46
+      "ratio": 78.92
     },
     "140860": {
-      "current_price": 268000,
+      "current_price": 266000,
       "all_time_high": 321500,
       "all_time_high_date": "2026-01-29",
-      "ratio": 83.36
+      "ratio": 82.74
     },
     "469160": {
-      "current_price": 21975,
+      "current_price": 22070,
       "all_time_high": 22985,
       "all_time_high_date": "2026-02-19",
-      "ratio": 95.61
+      "ratio": 96.02
     },
     "449450": {
-      "current_price": 69040,
+      "current_price": 69110,
       "all_time_high": 71180,
       "all_time_high_date": "2026-02-04",
-      "ratio": 96.99
+      "ratio": 97.09
     },
     "411060": {
-      "current_price": 33760,
+      "current_price": 33810,
       "all_time_high": 37890,
       "all_time_high_date": "2026-01-29",
-      "ratio": 89.1
+      "ratio": 89.23
     },
     "005930": {
-      "current_price": 195600,
+      "current_price": 196800,
       "all_time_high": 197600,
       "all_time_high_date": "2026-02-23",
-      "ratio": 98.99
+      "ratio": 99.6
     }
   }
 }
