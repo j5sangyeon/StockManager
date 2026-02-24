@@ -394,7 +394,7 @@
   }
 
   /* ────────────────────────────────────────────────
-     시세 데이터 로드 (data/prices.json)
+     시세 데이터 로드 (data/prices.json — 역대 최고가 기준연도)
   ──────────────────────────────────────────────── */
   async function loadPrices() {
     try {
@@ -402,6 +402,38 @@
       if (!r.ok) throw new Error();
       return await r.json();
     } catch { return { updated_at: null, prices: {} }; }
+  }
+
+  /* ────────────────────────────────────────────────
+     실시간 현재가 조회 (Yahoo Finance API)
+  ──────────────────────────────────────────────── */
+  // 한국 주식 티커 변환: 6자리 KRX 코드 → Yahoo 형식
+  // 코스피: 005930 → 005930.KS / 코스닥: 068270 → 068270.KQ / ETF: .KS
+  function toYahooTicker(ticker, market) {
+    const suffix = (market === 'KOSDAQ') ? '.KQ' : '.KS';
+    return ticker + suffix;
+  }
+
+  // stocklist에서 시장 정보 조회
+  function getMarket(ticker) {
+    if (!_stocklist) return 'KOSPI';
+    const found = _stocklist.find(s => s.ticker === ticker);
+    return found ? found.market : 'KOSPI';
+  }
+
+  // 단일 종목 실시간 현재가 조회
+  async function fetchLivePrice(ticker) {
+    try {
+      const market  = getMarket(ticker);
+      const yTicker = toYahooTicker(ticker, market);
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${yTicker}?interval=1d&range=1d`;
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      const json = await res.json();
+      const meta = json?.chart?.result?.[0]?.meta;
+      if (!meta) return null;
+      return Math.round(meta.regularMarketPrice);
+    } catch { return null; }
   }
 
   /* ────────────────────────────────────────────────
@@ -468,15 +500,52 @@
   }
 
   /* ────────────────────────────────────────────────
-     시세 새로고침 버튼
+     시세 새로고침 (실시간 현재가 + 기존 ATH 데이터)
   ──────────────────────────────────────────────── */
   async function refreshPrices() {
     const btn = document.getElementById('refresh-btn');
-    btn.disabled = true; btn.textContent = '⏳ 로딩 중…';
-    pricesData = await loadPrices();
+    btn.disabled = true; btn.textContent = '⏳ 조회 중…';
+
+    // 1) 기존 prices.json(역대 최고가 데이터) 로드
+    const base = await loadPrices();
+    const prices = { ...base.prices };
+
+    // 2) 종목별 실시간 현재가 병렬 조회
+    toast(`실시간 시세 조회 중… (${portfolio.length}개 종목)`, 'inf');
+    await loadStocklist(); // _stocklist 캐시 준비
+
+    const results = await Promise.allSettled(
+      portfolio.map(async item => {
+        const livePrice = await fetchLivePrice(item.ticker);
+        return { ticker: item.ticker, livePrice };
+      })
+    );
+
+    let successCount = 0;
+    const now = new Date();
+    results.forEach(r => {
+      if (r.status === 'fulfilled' && r.value.livePrice !== null) {
+        const { ticker, livePrice } = r.value;
+        if (prices[ticker]) {
+          // 역대 최고가는 유지, 현재가만 갱신
+          const ath   = prices[ticker].all_time_high;
+          const ratio = ath > 0 ? Math.round((livePrice / ath) * 10000) / 100 : 0;
+          prices[ticker] = { ...prices[ticker], current_price: livePrice, ratio };
+        } else {
+          // prices.json에 없는 종목도 현재가 표시
+          prices[ticker] = { current_price: livePrice, all_time_high: 0, all_time_high_date: '-', ratio: 0 };
+        }
+        successCount++;
+      }
+    });
+
+    pricesData = {
+      updated_at: now.toLocaleString('ko-KR'),
+      prices,
+    };
     renderTable();
     btn.disabled = false; btn.textContent = '🔄 시세 새로고침';
-    toast('시세가 업데이트되었습니다.', 'ok');
+    toast(`실시간 시세 업데이트 완료 (${successCount}/${portfolio.length}개 성공)`, successCount > 0 ? 'ok' : 'err');
   }
 
   /* ────────────────────────────────────────────────
