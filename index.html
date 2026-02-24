@@ -153,14 +153,6 @@
     }
     .tip-box a { color: var(--primary); font-weight: 700; }
 
-    /* ── Guide modal pre ─────────────────────────── */
-    #guide-msg pre {
-      background:#f4f8ff; border:1px solid var(--border); border-radius:6px;
-      padding:10px 12px; font-size:.82rem; overflow-x:auto;
-      margin: 10px 0 10px;
-    }
-    #guide-msg a { color:var(--primary); font-weight:600; }
-
     /* ── Search in modal ─────────────────────────── */
     .search-area { margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
     .search-area label { display: block; font-size: .82rem; font-weight: 600; color: var(--text-sub); margin-bottom: 7px; }
@@ -301,21 +293,7 @@
     </div>
   </div>
 </div>
-<!-- ── Guide Modal ──────────────────────────────────── -->
-<div id="guide-modal" class="overlay" onclick="closeModal('guide-modal')">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-head">
-      <h2>📝 portfolio.json 업데이트 안내</h2>
-      <button class="modal-close" onclick="closeModal('guide-modal')">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div id="guide-msg"></div>
-      <div class="form-actions" style="margin-top:14px">
-        <button class="btn btn-outline" onclick="closeModal('guide-modal')">닫기</button>
-      </div>
-    </div>
-  </div>
-</div>
+
 <!-- ── Edit Modal ─────────────────────────────────── -->
 <div id="edit-modal" class="overlay" onclick="closeModal('edit-modal')">
   <div class="modal" onclick="event.stopPropagation()">
@@ -488,38 +466,17 @@
     if (portfolio.some(i => i.ticker === ticker)) {
       toast('이미 등록된 종목입니다.', 'err'); return;
     }
-    const newItem = {
+    portfolio.push({
       ticker,
       name,
       quantity:    +document.getElementById('a-qty').value || 0,
       buy_price:   +document.getElementById('a-bp').value  || 0,
       sell_target: +document.getElementById('a-st').value  || 0,
-    };
-    portfolio.push(newItem);
+    });
     savePortfolio(portfolio);
     renderTable();
     closeModal('add-modal');
     toast(`[${name}] 추가되었습니다.`, 'ok');
-    // portfolio.json GitHub 편집 안내
-    showPortfolioGuide(newItem);
-  }
-
-  function showPortfolioGuide(item) {
-    const json = JSON.stringify({ticker:item.ticker, name:item.name, quantity:item.quantity, buy_price:item.buy_price, sell_target:item.sell_target}, null, 2);
-    const editUrl = 'https://github.com/j5sangyeon/StockManager/edit/main/portfolio.json';
-    const msg = document.getElementById('guide-msg');
-    msg.innerHTML =
-      `<b>[${item.name}]</b> 종목을 시세 업데이트하려면 GitHub의 ` +
-      `<a href="${editUrl}" target="_blank">portfolio.json</a>에 아래 항목을 watchlist 배열 난에 추가하세요:<br>` +
-      `<pre id="guide-json">${json}</pre>` +
-      `<button class="btn btn-outline btn-sm" onclick="copyGuideJson()">&#128203; 복사</button>` +
-      `&nbsp;<a href="${editUrl}" target="_blank" class="btn btn-green btn-sm" style="text-decoration:none;display:inline-block">GitHub에서 편집 ↗️</a>`;
-    document.getElementById('guide-modal').classList.add('on');
-  }
-
-  function copyGuideJson() {
-    const text = document.getElementById('guide-json').textContent;
-    navigator.clipboard.writeText(text).then(() => toast('복사되었습니다.', 'ok'));
   }
 
   /* ────────────────────────────────────────────────
@@ -564,7 +521,7 @@
   ──────────────────────────────────────────────── */
   function closeModal(id) { document.getElementById(id).classList.remove('on'); }
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeModal('add-modal'); closeModal('edit-modal'); closeModal('guide-modal'); }
+    if (e.key === 'Escape') { closeModal('add-modal'); closeModal('edit-modal'); }
   });
 
   /* ── 종목 검색 (KRX Open API) ──────────────────── */
