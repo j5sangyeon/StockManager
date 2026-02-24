@@ -153,6 +153,32 @@
     }
     .tip-box a { color: var(--primary); font-weight: 700; }
 
+    /* ── Search in modal ─────────────────────────── */
+    .search-area { margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+    .search-area label { display: block; font-size: .82rem; font-weight: 600; color: var(--text-sub); margin-bottom: 7px; }
+    .search-row { display: flex; gap: 8px; }
+    .search-row input {
+      flex: 1; padding: 9px 11px;
+      border: 1px solid var(--border); border-radius: 6px; font-size: .9rem;
+    }
+    .search-row input:focus { outline: none; border-color: var(--primary); }
+    .search-results {
+      display: none; margin-top: 7px;
+      border: 1px solid var(--border); border-radius: 6px;
+      max-height: 210px; overflow-y: auto;
+    }
+    .search-results.on { display: block; }
+    .sr-item {
+      padding: 8px 12px; cursor: pointer;
+      display: flex; gap: 10px; align-items: center;
+      font-size: .86rem; border-bottom: 1px solid var(--border);
+    }
+    .sr-item:last-child { border-bottom: none; }
+    .sr-item:hover { background: var(--accent); }
+    .sr-code { font-family: monospace; color: var(--primary); font-weight: 700; min-width: 58px; }
+    .sr-market { font-size: .72rem; color: #fff; background: var(--primary); padding: 1px 7px; border-radius: 10px; }
+    .sr-msg { padding: 12px; text-align: center; color: var(--text-sub); font-size: .85rem; }
+
     /* ── Toast ───────────────────────────────────── */
     .toast {
       position: fixed; bottom: 22px; right: 22px;
@@ -225,10 +251,15 @@
       <button class="modal-close" onclick="closeModal('add-modal')">&times;</button>
     </div>
     <div class="modal-body">
+      <div class="search-area">
+        <label>종목명으로 검색하여 코드 확인</label>
+        <div class="search-row">
+          <input id="s-input" type="text" placeholder="예: 삼성, KODEX, SOL…" oninput="searchDebounce(this.value)">
+          <button class="btn btn-outline btn-sm" onclick="doSearch()">검색</button>
+        </div>
+        <div id="s-results" class="search-results"></div>
+      </div>
       <div class="tip-box">
-        💡 종목코드를 모르는 경우 →
-        <a href="https://finance.naver.com" target="_blank">네이버 금융</a> 또는
-        <a href="http://data.krx.co.kr" target="_blank">KRX 데이터시스템</a>에서 검색하세요.<br><br>
         ⚠️ 새 종목 추가 후 시세 표시를 원하시면 <strong>watchlist.json</strong>에도 티커를 추가하고
         GitHub에 푸시하세요. (GitHub Actions가 자동으로 시세를 수집합니다)
       </div>
@@ -421,6 +452,9 @@
   ──────────────────────────────────────────────── */
   function openAddModal() {
     document.getElementById('add-form').reset();
+    document.getElementById('s-input').value = '';
+    const sr = document.getElementById('s-results');
+    sr.innerHTML = ''; sr.classList.remove('on');
     document.getElementById('add-modal').classList.add('on');
   }
 
@@ -488,6 +522,54 @@
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') { closeModal('add-modal'); closeModal('edit-modal'); }
   });
+
+  /* ── 종목 검색 (KRX Open API) ──────────────────── */
+  let _searchTimer = null;
+  function searchDebounce(v) {
+    clearTimeout(_searchTimer);
+    const sr = document.getElementById('s-results');
+    if (!v.trim()) { sr.innerHTML = ''; sr.classList.remove('on'); return; }
+    _searchTimer = setTimeout(() => doSearch(v), 500);
+  }
+
+  async function doSearch(kw) {
+    const q  = kw || document.getElementById('s-input').value.trim();
+    if (!q) return;
+    const sr = document.getElementById('s-results');
+    sr.innerHTML = '<div class="sr-msg"><span class="spin"></span> 검색 중…</div>';
+    sr.classList.add('on');
+    try {
+      // KRX Open API로 종목 검색
+      const url = `https://api.stock.naver.com/stock/search?query=${encodeURIComponent(q)}&length=20`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('검색 실패');
+      const json = await res.json();
+      const items = json.stocks || json.result || json.items || [];
+      if (!items.length) {
+        sr.innerHTML = '<div class="sr-msg">검색 결과가 없습니다.</div>';
+        return;
+      }
+      sr.innerHTML = items.slice(0, 30).map(r => {
+        const ticker = r.itemCode || r.code || r.ticker || '';
+        const name   = r.itemName || r.name || r.stockName || '';
+        const market = r.market   || r.stockExchangeType?.name || '';
+        return `<div class="sr-item" onclick="pickResult('${ticker}','${name.replace(/'/g,"\\'")}')">` +
+          `<span class="sr-code">${ticker}</span>` +
+          `<span style="flex:1">${name}</span>` +
+          `<span class="sr-market">${market}</span>` +
+          `</div>`;
+      }).join('');
+    } catch {
+      sr.innerHTML = '<div class="sr-msg" style="color:#e53935">검색 실패 — 종목코드를 직접 입력하세요.</div>';
+    }
+  }
+
+  function pickResult(ticker, name) {
+    document.getElementById('a-ticker').value = ticker;
+    document.getElementById('a-name').value   = name;
+    document.getElementById('s-results').classList.remove('on');
+    document.getElementById('s-input').value  = '';
+  }
 
   function num(n)       { return Number(n).toLocaleString('ko-KR'); }
   function dash(t = '-') { return `<span class="dash">${t}</span>`; }
