@@ -219,6 +219,7 @@
   </div>
   <div class="header-right">
     <button id="refresh-btn" class="btn btn-white" onclick="refreshPrices()">🔄 시세 새로고침</button>
+    <a href="https://github.com/j5sangyeon/StockManager/actions/workflows/update_prices.yml" target="_blank" class="btn btn-white" title="GitHub Actions에서 수동으로 시세 수집 실행">⚡ 시세 수집 실행</a>
     <button class="btn btn-green" onclick="openAddModal()">➕ 종목 추가</button>
   </div>
 </header>
@@ -394,7 +395,7 @@
   }
 
   /* ────────────────────────────────────────────────
-     시세 데이터 로드 (data/prices.json — 역대 최고가 기준연도)
+     시세 데이터 로드 (data/prices.json)
   ──────────────────────────────────────────────── */
   async function loadPrices() {
     try {
@@ -402,38 +403,6 @@
       if (!r.ok) throw new Error();
       return await r.json();
     } catch { return { updated_at: null, prices: {} }; }
-  }
-
-  /* ────────────────────────────────────────────────
-     실시간 현재가 조회 (Yahoo Finance API)
-  ──────────────────────────────────────────────── */
-  // 한국 주식 티커 변환: 6자리 KRX 코드 → Yahoo 형식
-  // 코스피: 005930 → 005930.KS / 코스닥: 068270 → 068270.KQ / ETF: .KS
-  function toYahooTicker(ticker, market) {
-    const suffix = (market === 'KOSDAQ') ? '.KQ' : '.KS';
-    return ticker + suffix;
-  }
-
-  // stocklist에서 시장 정보 조회
-  function getMarket(ticker) {
-    if (!_stocklist) return 'KOSPI';
-    const found = _stocklist.find(s => s.ticker === ticker);
-    return found ? found.market : 'KOSPI';
-  }
-
-  // 단일 종목 실시간 현재가 조회
-  async function fetchLivePrice(ticker) {
-    try {
-      const market  = getMarket(ticker);
-      const yTicker = toYahooTicker(ticker, market);
-      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${yTicker}?interval=1d&range=1d`;
-      const res = await fetch(url);
-      if (!res.ok) return null;
-      const json = await res.json();
-      const meta = json?.chart?.result?.[0]?.meta;
-      if (!meta) return null;
-      return Math.round(meta.regularMarketPrice);
-    } catch { return null; }
   }
 
   /* ────────────────────────────────────────────────
@@ -461,7 +430,9 @@
       const p  = prices[item.ticker];
       const sp = item.sell_target > 0 ? Math.floor(item.sell_target * 0.9) : 0;
 
-      const curCell  = p ? `<span class="price">${num(p.current_price)}원</span>` : dash('미등록');
+      const curCell  = p ? `<span class="price">${num(p.current_price)}원</span>`
+                         : `<span class="badge badge-r" style="cursor:pointer" title="클릭하면 등록 방법 안내"
+                             onclick="showGuideModal({ticker:'${item.ticker}',name:'${safeName}'})">미등록 ⓘ</span>`;
       const athCell  = p ? `<span class="ath">${num(p.all_time_high)}원</span>`   : dash();
       const dateCell = p ? p.all_time_high_date                                    : dash();
       let   ratioCell = dash();
@@ -500,52 +471,25 @@
   }
 
   /* ────────────────────────────────────────────────
-     시세 새로고침 (실시간 현재가 + 기존 ATH 데이터)
+     시세 새로고침 (prices.json 리로드)
   ──────────────────────────────────────────────── */
   async function refreshPrices() {
     const btn = document.getElementById('refresh-btn');
-    btn.disabled = true; btn.textContent = '⏳ 조회 중…';
-
-    // 1) 기존 prices.json(역대 최고가 데이터) 로드
-    const base = await loadPrices();
-    const prices = { ...base.prices };
-
-    // 2) 종목별 실시간 현재가 병렬 조회
-    toast(`실시간 시세 조회 중… (${portfolio.length}개 종목)`, 'inf');
-    await loadStocklist(); // _stocklist 캐시 준비
-
-    const results = await Promise.allSettled(
-      portfolio.map(async item => {
-        const livePrice = await fetchLivePrice(item.ticker);
-        return { ticker: item.ticker, livePrice };
-      })
-    );
-
-    let successCount = 0;
-    const now = new Date();
-    results.forEach(r => {
-      if (r.status === 'fulfilled' && r.value.livePrice !== null) {
-        const { ticker, livePrice } = r.value;
-        if (prices[ticker]) {
-          // 역대 최고가는 유지, 현재가만 갱신
-          const ath   = prices[ticker].all_time_high;
-          const ratio = ath > 0 ? Math.round((livePrice / ath) * 10000) / 100 : 0;
-          prices[ticker] = { ...prices[ticker], current_price: livePrice, ratio };
-        } else {
-          // prices.json에 없는 종목도 현재가 표시
-          prices[ticker] = { current_price: livePrice, all_time_high: 0, all_time_high_date: '-', ratio: 0 };
-        }
-        successCount++;
-      }
-    });
-
-    pricesData = {
-      updated_at: now.toLocaleString('ko-KR'),
-      prices,
-    };
+    btn.disabled = true; btn.textContent = '⏳ 로딩 중…';
+    pricesData = await loadPrices();
     renderTable();
     btn.disabled = false; btn.textContent = '🔄 시세 새로고침';
-    toast(`실시간 시세 업데이트 완료 (${successCount}/${portfolio.length}개 성공)`, successCount > 0 ? 'ok' : 'err');
+
+    // 미등록 종목 안내
+    const prices   = pricesData.prices || {};
+    const missing  = portfolio.filter(i => !prices[i.ticker]);
+    const updAt    = pricesData.updated_at || '없음';
+
+    if (missing.length) {
+      toast(`데이터 로드 완료 — 미등록 ${missing.length}개 종목이 있습니다. (시세 기준: ${updAt})`, 'inf');
+    } else {
+      toast(`데이터 로드 완료 — 시세 기준: ${updAt}`, 'ok');
+    }
   }
 
   /* ────────────────────────────────────────────────

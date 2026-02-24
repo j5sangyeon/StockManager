@@ -4,6 +4,10 @@ on:
   schedule:
     - cron: '0 0,2,4,6 * * 1-5'  # KST 09:00~15:00 (UTC 기준)
   workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'portfolio.json'   # portfolio.json 변경 시 자동 실행
 
 jobs:
   update:
