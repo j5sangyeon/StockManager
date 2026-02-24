@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>내 주식 관리 📈</title>
+  <style>
+    :root {
+      --primary:       #1565c0;
+      --primary-dark:  #0d47a1;
+      --primary-light: #1976d2;
+      --accent:        #e3f2fd;
+      --bg:            #f0f4f8;
+      --white:         #ffffff;
+      --border:        #e0e0e0;
+      --text:          #212121;
+      --text-sub:      #757575;
+      --green:         #2e7d32;
+      --green-bg:      #e8f5e9;
+      --orange:        #e65100;
+      --orange-bg:     #fff3e0;
+      --red:           #c62828;
+      --red-bg:        #ffebee;
+      --shadow:        0 2px 10px rgba(0,0,0,.10);
+      --radius:        8px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ──────────────────────────────────── */
+    .header {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+      color: #fff;
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      box-shadow: 0 2px 12px rgba(0,0,0,.25);
+    }
+    .header-left { display: flex; align-items: center; gap: 14px; }
+    .header-left h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.3px; }
+    .updated { font-size: 0.78rem; opacity: .75; }
+    .header-right { display: flex; gap: 10px; }
+
+    /* ── Buttons ─────────────────────────────────── */
+    .btn {
+      padding: 8px 16px; border: none; border-radius: 6px;
+      cursor: pointer; font-size: .85rem; font-weight: 600;
+      transition: transform .15s, opacity .15s;
+    }
+    .btn:hover:not(:disabled) { transform: translateY(-1px); opacity: .9; }
+    .btn:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-white   { background: #fff; color: var(--primary); }
+    .btn-green   { background: #43a047; color: #fff; }
+    .btn-orange  { background: #fb8c00; color: #fff; }
+    .btn-red     { background: #e53935; color: #fff; }
+    .btn-outline { background: transparent; border: 1.5px solid var(--primary); color: var(--primary); }
+    .btn-sm      { padding: 4px 10px; font-size: .78rem; border-radius: 4px; }
+
+    /* ── Main ────────────────────────────────────── */
+    .main { padding: 22px 24px; }
+
+    /* ── Table ───────────────────────────────────── */
+    .table-wrap {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow-x: auto;
+    }
+    table { width: 100%; border-collapse: collapse; min-width: 1060px; }
+    thead tr { background: var(--primary); color: #fff; }
+    th {
+      padding: 12px 14px;
+      text-align: center;
+      font-size: .82rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    td {
+      padding: 11px 14px;
+      text-align: right;
+      font-size: .875rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    td.l { text-align: left; }
+    td.c { text-align: center; }
+    tbody tr:hover { background: #f4f8ff; }
+    tbody tr:last-child td { border-bottom: none; }
+
+    /* ── Price / ratio ───────────────────────────── */
+    .price  { font-weight: 600; }
+    .ath    { color: var(--red); font-weight: 600; }
+    .dash   { color: #bbb; }
+    .badge  {
+      display: inline-block; padding: 2px 9px;
+      border-radius: 12px; font-size: .78rem; font-weight: 700;
+    }
+    .badge-g { background: var(--green-bg);  color: var(--green);  }
+    .badge-o { background: var(--orange-bg); color: var(--orange); }
+    .badge-r { background: var(--red-bg);    color: var(--red);    }
+
+    /* ── Spinner ─────────────────────────────────── */
+    .spin {
+      display: inline-block; width: 15px; height: 15px;
+      border: 2px solid #ddd; border-top-color: var(--primary);
+      border-radius: 50%; animation: rot .7s linear infinite;
+      vertical-align: middle;
+    }
+    @keyframes rot { to { transform: rotate(360deg); } }
+    .center-cell { text-align: center; color: var(--text-sub); }
+
+    /* ── Modal overlay ───────────────────────────── */
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.48); z-index: 1000;
+      align-items: center; justify-content: center;
+    }
+    .overlay.on { display: flex; }
+    .modal {
+      background: var(--white); border-radius: var(--radius);
+      box-shadow: 0 8px 36px rgba(0,0,0,.22);
+      width: 480px; max-width: 95vw; max-height: 90vh;
+      overflow-y: auto; animation: pop .2s ease;
+    }
+    @keyframes pop { from { transform: translateY(-18px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .modal-head {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 18px 22px 14px; border-bottom: 1px solid var(--border);
+    }
+    .modal-head h2 { font-size: 1.05rem; }
+    .modal-close {
+      background: none; border: none; font-size: 1.6rem;
+      cursor: pointer; color: var(--text-sub); line-height: 1;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal-body { padding: 18px 22px 22px; }
+
+    /* ── Form ────────────────────────────────────── */
+    .fg { margin-bottom: 14px; }
+    .fg label {
+      display: block; font-size: .82rem;
+      font-weight: 600; color: var(--text-sub); margin-bottom: 5px;
+    }
+    .fg input {
+      width: 100%; padding: 9px 11px;
+      border: 1px solid var(--border); border-radius: 6px;
+      font-size: .9rem; transition: border-color .2s;
+    }
+    .fg input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(21,101,192,.1); }
+    .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+    .form-actions .btn { min-width: 76px; }
+
+    /* ── Search in modal ─────────────────────────── */
+    .search-area { margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+    .search-area label { display: block; font-size: .82rem; font-weight: 600; color: var(--text-sub); margin-bottom: 7px; }
+    .search-row { display: flex; gap: 8px; }
+    .search-row input {
+      flex: 1; padding: 9px 11px;
+      border: 1px solid var(--border); border-radius: 6px; font-size: .9rem;
+    }
+    .search-row input:focus { outline: none; border-color: var(--primary); }
+    .search-results {
+      display: none; margin-top: 7px;
+      border: 1px solid var(--border); border-radius: 6px;
+      max-height: 210px; overflow-y: auto;
+    }
+    .search-results.on { display: block; }
+    .sr-item {
+      padding: 8px 12px; cursor: pointer;
+      display: flex; gap: 10px; align-items: center;
+      font-size: .86rem; border-bottom: 1px solid var(--border);
+    }
+    .sr-item:last-child { border-bottom: none; }
+    .sr-item:hover { background: var(--accent); }
+    .sr-code { font-family: monospace; color: var(--primary); font-weight: 700; min-width: 58px; }
+    .sr-market {
+      font-size: .72rem; color: #fff; background: var(--primary);
+      padding: 1px 7px; border-radius: 10px;
+    }
+    .sr-msg { padding: 12px; text-align: center; color: var(--text-sub); font-size: .85rem; }
+
+    /* ── Toast ───────────────────────────────────── */
+    .toast {
+      position: fixed; bottom: 22px; right: 22px;
+      padding: 11px 20px; border-radius: 7px; color: #fff;
+      font-size: .875rem; font-weight: 600; z-index: 9999;
+      transform: translateY(60px); opacity: 0;
+      transition: all .3s ease; pointer-events: none;
+    }
+    .toast.on  { transform: translateY(0); opacity: 1; }
+    .toast.ok  { background: #43a047; }
+    .toast.err { background: #e53935; }
+    .toast.inf { background: var(--primary); }
+
+    @media (max-width:640px) {
+      .header { flex-direction: column; gap: 10px; }
+      .main   { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ────────────────────────────────────── -->
+<header class="header">
+  <div class="header-left">
+    <h1>📈 내 주식 관리</h1>
+    <span id="updated" class="updated"></span>
+  </div>
+  <div class="header-right">
+    <button id="refresh-btn" class="btn btn-white" onclick="refreshAll()">🔄 전체 새로고침</button>
+    <button class="btn btn-green" onclick="openAddModal()">➕ 종목 추가</button>
+  </div>
+</header>
+
+<!-- ── Table ──────────────────────────────────────── -->
+<main class="main">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align:left">종목명</th>
+          <th>종목코드</th>
+          <th>현재가</th>
+          <th>역대최고가</th>
+          <th>최고가달성일</th>
+          <th>최고가대비</th>
+          <th>보유수량</th>
+          <th>매입단가</th>
+          <th>매도기준단가</th>
+          <th>매도단가<br><small style="font-weight:400;opacity:.85">(기준가×90%)</small></th>
+          <th>관리</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr><td colspan="11" class="center-cell" style="padding:36px"><span class="spin"></span> 불러오는 중...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<!-- ── Add Modal ──────────────────────────────────── -->
+<div id="add-modal" class="overlay" onclick="closeModal('add-modal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <h2>➕ 종목 추가</h2>
+      <button class="modal-close" onclick="closeModal('add-modal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="search-area">
+        <label>종목명으로 검색하여 코드 확인</label>
+        <div class="search-row">
+          <input id="s-input" type="text" placeholder="예: 삼성, KODEX, SOL…" oninput="debounce(this.value)">
+          <button class="btn btn-outline btn-sm" onclick="doSearch()">검색</button>
+        </div>
+        <div id="s-results" class="search-results"></div>
+      </div>
+      <form id="add-form" onsubmit="submitAdd(event)">
+        <div class="fg"><label>종목코드 *</label><input id="a-ticker" placeholder="예: 005930" required maxlength="6"></div>
+        <div class="fg"><label>종목명 *</label><input id="a-name" placeholder="예: 삼성전자" required></div>
+        <div class="fg"><label>보유수량 (주)</label><input id="a-qty" type="number" min="0" value="0"></div>
+        <div class="fg"><label>매입단가 (원)</label><input id="a-bp" type="number" min="0" value="0"></div>
+        <div class="fg"><label>매도기준단가 (원)</label><input id="a-st" type="number" min="0" value="0"></div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" onclick="closeModal('add-modal')">취소</button>
+          <button type="submit" class="btn btn-green">추가</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ── Edit Modal ─────────────────────────────────── -->
+<div id="edit-modal" class="overlay" onclick="closeModal('edit-modal')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <h2 id="edit-title">✏️ 보유정보 수정</h2>
+      <button class="modal-close" onclick="closeModal('edit-modal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="edit-form" onsubmit="submitEdit(event)">
+        <input type="hidden" id="e-ticker">
+        <div class="fg"><label>보유수량 (주)</label><input id="e-qty" type="number" min="0"></div>
+        <div class="fg"><label>매입단가 (원)</label><input id="e-bp" type="number" min="0"></div>
+        <div class="fg"><label>매도기준단가 (원)</label><input id="e-st" type="number" min="0"></div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" onclick="closeModal('edit-modal')">취소</button>
+          <button type="submit" class="btn btn-white" style="background:var(--primary);color:#fff">저장</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast ──────────────────────────────────────── -->
+<div id="toast" class="toast"></div>
+
+<script>
+  let portfolio  = [];
+  let priceCache  = {};
+
+  /* ── 초기화 ────────────────────────────────────── */
+  async function init() {
+    try {
+      const res = await fetch('/api/portfolio');
+      portfolio  = await res.json();
+      renderTable();
+      portfolio.forEach(item => fetchPrice(item));
+    } catch {
+      toast('포트폴리오 로드 실패', 'err');
+    }
+  }
+
+  /* ── 테이블 렌더링 ─────────────────────────────── */
+  function renderTable() {
+    const tb = document.getElementById('tbody');
+    if (!portfolio.length) {
+      tb.innerHTML = '<tr><td colspan="11" class="center-cell" style="padding:36px;color:#aaa">등록된 종목이 없습니다.</td></tr>';
+      return;
+    }
+    tb.innerHTML = portfolio.map(rowHTML).join('');
+    // 캐시된 가격은 즉시 표시
+    portfolio.forEach(item => {
+      const cached = priceCache[item.ticker];
+      if (cached) {
+        const row = document.getElementById(`r-${item.ticker}`);
+        if (row) updateRowPrice(row, cached);
+      }
+    });
+  }
+
+  /* ── 행 가격 갱신 (캐시/fetchPrice 공용) ────────── */
+  function updateRowPrice(row, info) {
+    row.querySelector('.p-cur').innerHTML  = `<span class="price">${num(info.current_price)}원</span>`;
+    row.querySelector('.p-ath').innerHTML  = `<span class="ath">${num(info.all_time_high)}원</span>`;
+    row.querySelector('.p-date').innerHTML = info.all_time_high_date;
+    const r   = info.ratio;
+    const cls = r >= 90 ? 'badge-g' : r >= 70 ? 'badge-o' : 'badge-r';
+    row.querySelector('.p-ratio').innerHTML = `<span class="badge ${cls}">${r}%</span>`;
+  }
+
+  function rowHTML(item) {
+    const sp  = item.sell_target > 0 ? Math.floor(item.sell_target * 0.9) : 0;
+    const enc = encodeURIComponent(item.name);
+    return `
+    <tr id="r-${item.ticker}">
+      <td class="l" style="font-weight:600">${item.name}</td>
+      <td class="c" style="font-family:monospace;color:var(--text-sub)">${item.ticker}</td>
+      <td class="center-cell p-cur"><span class="spin"></span></td>
+      <td class="center-cell p-ath"><span class="spin"></span></td>
+      <td class="center-cell p-date"><span class="spin"></span></td>
+      <td class="center-cell p-ratio"><span class="spin"></span></td>
+      <td>${item.quantity > 0 ? num(item.quantity)+'주' : dash()}</td>
+      <td>${item.buy_price  > 0 ? num(item.buy_price)+'원'   : dash()}</td>
+      <td>${item.sell_target> 0 ? num(item.sell_target)+'원' : dash()}</td>
+      <td>${sp > 0 ? num(sp)+'원' : dash()}</td>
+      <td class="c">
+        <button class="btn btn-orange btn-sm" style="margin-right:4px"
+          onclick="openEdit('${item.ticker}','${item.name.replace(/'/g,"\\'")}',${item.quantity},${item.buy_price},${item.sell_target})">✏️</button>
+        <button class="btn btn-red btn-sm"
+          onclick="delStock('${item.ticker}','${item.name.replace(/'/g,"\\'")}')">🗑️</button>
+      </td>
+    </tr>`;
+  }
+
+  /* ── 가격 조회 (비동기, 종목별) ────────────────── */
+  async function fetchPrice(item) {
+    const row = document.getElementById(`r-${item.ticker}`);
+    if (!row) return;
+    try {
+      const res  = await fetch(`/api/stock/${item.ticker}?name=${encodeURIComponent(item.name)}`);
+      if (!res.ok) throw 0;
+      const info = await res.json();
+      priceCache[item.ticker] = info;
+      updateRowPrice(row, info);
+    } catch {
+      priceCache[item.ticker] = null;
+      ['p-cur','p-ath','p-date','p-ratio'].forEach(c =>
+        row.querySelector('.'+c).innerHTML = '<span class="dash">-</span>'
+      );
+    }
+  }
+
+  /* ── 전체 새로고침 ─────────────────────────────── */
+  async function refreshAll() {
+    const btn = document.getElementById('refresh-btn');
+    btn.disabled = true; btn.textContent = '⏳ 조회 중…';
+    priceCache = {};
+    portfolio.forEach(item => {
+      const row = document.getElementById(`r-${item.ticker}`);
+      if (row) ['p-cur','p-ath','p-date','p-ratio'].forEach(c =>
+        row.querySelector('.'+c).innerHTML = '<span class="spin"></span>'
+      );
+    });
+    await Promise.all(portfolio.map(fetchPrice));
+    btn.disabled = false; btn.textContent = '🔄 전체 새로고침';
+    const t = new Date();
+    document.getElementById('updated').textContent =
+      `최근 업데이트: ${t.toLocaleTimeString('ko-KR')}`;
+    toast('시세가 업데이트되었습니다.', 'ok');
+  }
+
+  /* ── 종목 추가 ─────────────────────────────────── */
+  function openAddModal() {
+    document.getElementById('add-form').reset();
+    document.getElementById('s-input').value = '';
+    const sr = document.getElementById('s-results');
+    sr.innerHTML = ''; sr.classList.remove('on');
+    document.getElementById('add-modal').classList.add('on');
+  }
+
+  async function submitAdd(e) {
+    e.preventDefault();
+    const body = {
+      ticker:      document.getElementById('a-ticker').value.trim(),
+      name:        document.getElementById('a-name').value.trim(),
+      quantity:    +document.getElementById('a-qty').value || 0,
+      buy_price:   +document.getElementById('a-bp').value  || 0,
+      sell_target: +document.getElementById('a-st').value  || 0,
+    };
+    const res  = await fetch('/api/portfolio', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    const data = await res.json();
+    if (!res.ok) { toast(data.error||'추가 실패', 'err'); return; }
+    closeModal('add-modal');
+    toast(`[${body.name}] 추가되었습니다. 시세 조회 중…`, 'inf');
+    const pRes = await fetch('/api/portfolio');
+    portfolio  = await pRes.json();
+    renderTable();
+    // 새로 추가된 종목만 즉시 조회
+    fetchPrice(body).then(() => toast(`[${body.name}] 시세 조회 완료`, 'ok'));
+  }
+
+  /* ── 보유정보 수정 ─────────────────────────────── */
+  function openEdit(ticker, name, qty, bp, st) {
+    document.getElementById('e-ticker').value = ticker;
+    document.getElementById('edit-title').textContent = `✏️ ${name} 보유정보 수정`;
+    document.getElementById('e-qty').value = qty;
+    document.getElementById('e-bp').value  = bp;
+    document.getElementById('e-st').value  = st;
+    document.getElementById('edit-modal').classList.add('on');
+  }
+
+  async function submitEdit(e) {
+    e.preventDefault();
+    const ticker = document.getElementById('e-ticker').value;
+    const body = {
+      quantity:    +document.getElementById('e-qty').value || 0,
+      buy_price:   +document.getElementById('e-bp').value  || 0,
+      sell_target: +document.getElementById('e-st').value  || 0,
+    };
+    const res  = await fetch(`/api/portfolio/${ticker}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    const data = await res.json();
+    if (!res.ok) { toast(data.error||'수정 실패', 'err'); return; }
+    closeModal('edit-modal');
+    toast('저장되었습니다.', 'ok');
+    await reload();
+  }
+
+  /* ── 종목 삭제 ─────────────────────────────────── */
+  async function delStock(ticker, name) {
+    if (!confirm(`[${name}] 종목을 삭제하시겠습니까?`)) return;
+    const res = await fetch(`/api/portfolio/${ticker}`, { method:'DELETE' });
+    if (!res.ok) { toast('삭제 실패', 'err'); return; }
+    toast(`[${name}] 삭제되었습니다.`, 'inf');
+    await reload();
+  }
+
+  /* ── 종목 검색 ─────────────────────────────────── */
+  let _st = null;
+  function debounce(v) {
+    clearTimeout(_st);
+    if (!v.trim()) { document.getElementById('s-results').classList.remove('on'); return; }
+    _st = setTimeout(() => doSearch(v), 500);
+  }
+
+  async function doSearch(kw) {
+    const q   = kw || document.getElementById('s-input').value.trim();
+    if (!q) return;
+    const sr  = document.getElementById('s-results');
+    sr.innerHTML = '<div class="sr-msg"><span class="spin"></span> 검색 중… (수초 소요)</div>';
+    sr.classList.add('on');
+    try {
+      const res     = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+      const results = await res.json();
+      if (!results.length) { sr.innerHTML = '<div class="sr-msg">검색 결과가 없습니다.</div>'; return; }
+      sr.innerHTML = results.slice(0,30).map(r => `
+        <div class="sr-item" onclick="pickResult('${r.ticker}','${r.name.replace(/'/g,"\\'")}')">
+          <span class="sr-code">${r.ticker}</span>
+          <span style="flex:1">${r.name}</span>
+          <span class="sr-market">${r.market}</span>
+        </div>`).join('');
+    } catch { sr.innerHTML = '<div class="sr-msg" style="color:#e53935">검색 실패</div>'; }
+  }
+
+  function pickResult(ticker, name) {
+    document.getElementById('a-ticker').value = ticker;
+    document.getElementById('a-name').value   = name;
+    document.getElementById('s-results').classList.remove('on');
+    document.getElementById('s-input').value  = '';
+  }
+
+  /* ── 모달 닫기 ─────────────────────────────────── */
+  function closeModal(id) { document.getElementById(id).classList.remove('on'); }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeModal('add-modal'); closeModal('edit-modal'); }
+  });
+
+  /* ── 재로드 (포트폴리오 + 가격) ────────────────── */
+  async function reload() {
+    const res = await fetch('/api/portfolio');
+    portfolio  = await res.json();
+    renderTable(); // 캐시된 가격은 즉시 표시됨
+  }
+
+  /* ── 유틸 ──────────────────────────────────────── */
+  function num(n)  { return Number(n).toLocaleString('ko-KR'); }
+  function dash()  { return '<span class="dash">-</span>'; }
+
+  let _tt = null;
+  function toast(msg, type='inf') {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className   = `toast ${type} on`;
+    clearTimeout(_tt);
+    _tt = setTimeout(() => el.classList.remove('on'), 3200);
+  }
+
+  /* ── 시작 ──────────────────────────────────────── */
+  init();
+</script>
+</body>
+</html>

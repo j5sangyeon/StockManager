@@ -1,0 +1,41 @@
+name: 📈 주가 데이터 업데이트
+
+on:
+  schedule:
+    - cron: '0 0,2,4,6 * * 1-5'  # KST 09:00~15:00 (UTC 기준)
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v3
+
+      - name: Python 설치
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 패키지 설치
+        run: |
+          python -m pip install --upgrade pip
+          pip install matplotlib
+          pip install pykrx
+          pip install pandas
+          pip install tabulate
+
+      - name: 시세 데이터 수집
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: 1
+        run: python scripts/fetch_prices.py
+
+      - name: 변경사항 커밋 & 푸시
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add data/prices.json
+          git diff --staged --quiet || git commit -m "📈 주가 데이터 자동 업데이트"
+          git pull --rebase origin main
+          git push
