@@ -305,7 +305,8 @@
 <div id="toast" class="toast"></div>
 
 <script>
-  let portfolio = [];
+  let portfolio  = [];
+  let priceCache  = {};
 
   /* ── 초기화 ────────────────────────────────────── */
   async function init() {
@@ -327,6 +328,24 @@
       return;
     }
     tb.innerHTML = portfolio.map(rowHTML).join('');
+    // 캐시된 가격은 즉시 표시
+    portfolio.forEach(item => {
+      const cached = priceCache[item.ticker];
+      if (cached) {
+        const row = document.getElementById(`r-${item.ticker}`);
+        if (row) updateRowPrice(row, cached);
+      }
+    });
+  }
+
+  /* ── 행 가격 갱신 (캐시/fetchPrice 공용) ────────── */
+  function updateRowPrice(row, info) {
+    row.querySelector('.p-cur').innerHTML  = `<span class="price">${num(info.current_price)}원</span>`;
+    row.querySelector('.p-ath').innerHTML  = `<span class="ath">${num(info.all_time_high)}원</span>`;
+    row.querySelector('.p-date').innerHTML = info.all_time_high_date;
+    const r   = info.ratio;
+    const cls = r >= 90 ? 'badge-g' : r >= 70 ? 'badge-o' : 'badge-r';
+    row.querySelector('.p-ratio').innerHTML = `<span class="badge ${cls}">${r}%</span>`;
   }
 
   function rowHTML(item) {
@@ -361,13 +380,10 @@
       const res  = await fetch(`/api/stock/${item.ticker}?name=${encodeURIComponent(item.name)}`);
       if (!res.ok) throw 0;
       const info = await res.json();
-      row.querySelector('.p-cur').innerHTML  = `<span class="price">${num(info.current_price)}원</span>`;
-      row.querySelector('.p-ath').innerHTML  = `<span class="ath">${num(info.all_time_high)}원</span>`;
-      row.querySelector('.p-date').innerHTML = info.all_time_high_date;
-      const r   = info.ratio;
-      const cls = r >= 90 ? 'badge-g' : r >= 70 ? 'badge-o' : 'badge-r';
-      row.querySelector('.p-ratio').innerHTML = `<span class="badge ${cls}">${r}%</span>`;
+      priceCache[item.ticker] = info;
+      updateRowPrice(row, info);
     } catch {
+      priceCache[item.ticker] = null;
       ['p-cur','p-ath','p-date','p-ratio'].forEach(c =>
         row.querySelector('.'+c).innerHTML = '<span class="dash">-</span>'
       );
@@ -378,6 +394,7 @@
   async function refreshAll() {
     const btn = document.getElementById('refresh-btn');
     btn.disabled = true; btn.textContent = '⏳ 조회 중…';
+    priceCache = {};
     portfolio.forEach(item => {
       const row = document.getElementById(`r-${item.ticker}`);
       if (row) ['p-cur','p-ath','p-date','p-ratio'].forEach(c =>
@@ -414,8 +431,12 @@
     const data = await res.json();
     if (!res.ok) { toast(data.error||'추가 실패', 'err'); return; }
     closeModal('add-modal');
-    toast(`[${body.name}] 추가되었습니다.`, 'ok');
-    await reload();
+    toast(`[${body.name}] 추가되었습니다. 시세 조회 중…`, 'inf');
+    const pRes = await fetch('/api/portfolio');
+    portfolio  = await pRes.json();
+    renderTable();
+    // 새로 추가된 종목만 즉시 조회
+    fetchPrice(body).then(() => toast(`[${body.name}] 시세 조회 완료`, 'ok'));
   }
 
   /* ── 보유정보 수정 ─────────────────────────────── */
@@ -497,8 +518,7 @@
   async function reload() {
     const res = await fetch('/api/portfolio');
     portfolio  = await res.json();
-    renderTable();
-    portfolio.forEach(fetchPrice);
+    renderTable(); // 캐시된 가격은 즉시 표시됨
   }
 
   /* ── 유틸 ──────────────────────────────────────── */

@@ -1,0 +1,21 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Flask 서버 실행",
+			"type": "shell",
+			"command": "D:\\Python312\\python.exe app.py",
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Flask 서버 실행",
+			"type": "shell",
+			"command": "D:\\Python312\\python.exe app.py",
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}

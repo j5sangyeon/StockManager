@@ -33,26 +33,47 @@ def get_stock_info(ticker: str, name: str) -> dict | None:
         return None
 
 
+def _recent_trading_day() -> str:
+    """오늘 또는 가장 최근 거래일을 YYYYMMDD 형식으로 반환."""
+    from datetime import timedelta
+    d = datetime.today()
+    # 토·일이면 금요일로 이동
+    while d.weekday() >= 5:
+        d -= timedelta(days=1)
+    return d.strftime("%Y%m%d")
+
+
 def search_stocks(keyword: str) -> list[tuple]:
     """종목명 키워드로 코스피·코스닥·ETF 종목 검색. 반환: [(코드, 이름, 시장), ...]"""
     results = []
-    today   = datetime.today().strftime("%Y%m%d")
+    today   = _recent_trading_day()
+    kw      = keyword.lower()
 
+    # ── 코스피 / 코스닥 ──────────────────────────────
     try:
         for market in ("KOSPI", "KOSDAQ"):
             tickers = stock.get_market_ticker_list(today, market=market)
             for t in tickers:
-                n = stock.get_market_ticker_name(t)
-                if keyword.lower() in n.lower():
-                    results.append((t, n, market))
+                try:
+                    n = stock.get_market_ticker_name(t)
+                    if n and kw in n.lower():
+                        results.append((t, n, market))
+                except Exception:
+                    continue
+    except Exception as e:
+        print(f"  ⚠  일반종목 검색 오류: {e}")
 
+    # ── ETF ─────────────────────────────────────────
+    try:
         etf_tickers = stock.get_etf_ticker_list(today)
         for t in etf_tickers:
-            n = stock.get_market_ticker_name(t)
-            if keyword.lower() in n.lower():
-                results.append((t, n, "ETF"))
-
+            try:
+                n = stock.get_etf_ticker_name(t)  # ETF 전용 이름 조회 API
+                if n and kw in n.lower():
+                    results.append((t, n, "ETF"))
+            except Exception:
+                continue
     except Exception as e:
-        print(f"  ⚠  검색 오류: {e}")
+        print(f"  ⚠  ETF 검색 오류: {e}")
 
     return results
