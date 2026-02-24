@@ -153,6 +153,17 @@
     }
     .tip-box a { color: var(--primary); font-weight: 700; }
 
+    /* ── Guide modal ────────────────────────────── */
+    .guide-desc { font-size: .88rem; margin-bottom: 10px; line-height: 1.6; }
+    .guide-desc strong { color: var(--primary); }
+    .guide-json {
+      background: #f4f8ff; border: 1px solid var(--border); border-radius: 6px;
+      padding: 10px 12px; font-size: .82rem; font-family: monospace;
+      white-space: pre; overflow-x: auto; margin: 8px 0 10px;
+    }
+    .guide-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+    .guide-actions a { text-decoration: none; }
+
     /* ── Search in modal ─────────────────────────── */
     .search-area { margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
     .search-area label { display: block; font-size: .82rem; font-weight: 600; color: var(--text-sub); margin-bottom: 7px; }
@@ -260,9 +271,8 @@
         <div id="s-results" class="search-results"></div>
       </div>
       <div class="tip-box">
-        ⚠️ 새 종목 추가 후 시세 표시를 원하시면 GitHub의
-        <a href="https://github.com/j5sangyeon/StockManager/edit/main/portfolio.json" target="_blank"><strong>portfolio.json</strong></a>에도 종목을 추가하고 푸시하세요.
-        (GitHub Actions가 자동으로 시세를 수집합니다)
+        💡 종목목을 모르면 위 검색란에서 이름으로 찾으세요.
+        수집할 시세 데이터는 종목 추가 후 안내에 따라 <strong>portfolio.json</strong>에 등록하세요.
       </div>
       <form id="add-form" onsubmit="submitAdd(event)">
         <div class="fg">
@@ -293,7 +303,28 @@
     </div>
   </div>
 </div>
-
+<!-- ── Guide Modal ──────────────────────────────────── -->
+<div id="guide-modal" class="overlay" onclick="closeModal('guide-modal')">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:520px">
+    <div class="modal-head">
+      <h2>📝 시세 수집 등록 안내</h2>
+      <button class="modal-close" onclick="closeModal('guide-modal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="guide-desc">
+        GitHub Pages는 정적 사이트라 자동으로 시세를 수집할 수 없습니다.<br>
+        아래 JSON을 <strong>portfolio.json</strong>의 <code style="background:#f4f8ff;padding:1px 5px;border-radius:3px">watchlist</code> 배열에 추가하세요.
+      </p>
+      <div class="guide-json" id="guide-json"></div>
+      <div class="guide-actions">
+        <button class="btn btn-outline" onclick="copyGuideJson()">&#128203; 복사</button>
+        <a id="guide-link" href="https://github.com/j5sangyeon/StockManager/edit/main/portfolio.json"
+           target="_blank" class="btn btn-green">🔗 GitHub portfolio.json 편집 ↗️</a>
+        <button class="btn btn-outline" onclick="closeModal('guide-modal')">&#10005; 닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
 <!-- ── Edit Modal ─────────────────────────────────── -->
 <div id="edit-modal" class="overlay" onclick="closeModal('edit-modal')">
   <div class="modal" onclick="event.stopPropagation()">
@@ -466,17 +497,38 @@
     if (portfolio.some(i => i.ticker === ticker)) {
       toast('이미 등록된 종목입니다.', 'err'); return;
     }
-    portfolio.push({
+    const newItem = {
       ticker,
       name,
       quantity:    +document.getElementById('a-qty').value || 0,
       buy_price:   +document.getElementById('a-bp').value  || 0,
       sell_target: +document.getElementById('a-st').value  || 0,
-    });
+    };
+    portfolio.push(newItem);
     savePortfolio(portfolio);
     renderTable();
     closeModal('add-modal');
     toast(`[${name}] 추가되었습니다.`, 'ok');
+    showGuideModal(newItem);
+  }
+
+  function showGuideModal(item) {
+    const snippet = `  {
+    "ticker": "${item.ticker}",
+    "name": "${item.name}",
+    "quantity": ${item.quantity},
+    "buy_price": ${item.buy_price},
+    "sell_target": ${item.sell_target}
+  }`;
+    document.getElementById('guide-json').textContent = snippet;
+    document.getElementById('guide-modal').classList.add('on');
+  }
+
+  function copyGuideJson() {
+    const text = document.getElementById('guide-json').textContent;
+    navigator.clipboard.writeText(text)
+      .then(() => toast('클립보드에 복사되었습니다.', 'ok'))
+      .catch(() => toast('복사 실패 — 직접 선택하여 복사하세요.', 'err'));
   }
 
   /* ────────────────────────────────────────────────
@@ -521,7 +573,7 @@
   ──────────────────────────────────────────────── */
   function closeModal(id) { document.getElementById(id).classList.remove('on'); }
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeModal('add-modal'); closeModal('edit-modal'); }
+    if (e.key === 'Escape') { closeModal('add-modal'); closeModal('edit-modal'); closeModal('guide-modal'); }
   });
 
   /* ── 종목 검색 (stocklist.json 기반 클라이언트 검색) ── */
