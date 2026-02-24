@@ -1,59 +1,59 @@
 {
-  "updated_at": "2026-02-23 15:05:31",
+  "updated_at": "2026-02-24 01:24:16",
   "prices": {
     "000660": {
-      "current_price": 951000,
-      "all_time_high": 980000,
-      "all_time_high_date": "2026-02-23",
-      "ratio": 97.04
+      "current_price": 983000,
+      "all_time_high": 984000,
+      "all_time_high_date": "2026-02-24",
+      "ratio": 99.9
     },
     "028260": {
-      "current_price": 332000,
+      "current_price": 334500,
       "all_time_high": 344500,
       "all_time_high_date": "2026-02-23",
-      "ratio": 96.37
+      "ratio": 97.1
     },
     "064350": {
-      "current_price": 221500,
+      "current_price": 217500,
       "all_time_high": 249500,
       "all_time_high_date": "2025-10-23",
-      "ratio": 88.78
+      "ratio": 87.17
     },
     "079550": {
-      "current_price": 489500,
+      "current_price": 510000,
       "all_time_high": 650000,
       "all_time_high_date": "2025-06-23",
-      "ratio": 75.31
+      "ratio": 78.46
     },
     "140860": {
-      "current_price": 270500,
+      "current_price": 268000,
       "all_time_high": 321500,
       "all_time_high_date": "2026-01-29",
-      "ratio": 84.14
+      "ratio": 83.36
     },
     "469160": {
-      "current_price": 21805,
+      "current_price": 21975,
       "all_time_high": 22985,
       "all_time_high_date": "2026-02-19",
-      "ratio": 94.87
+      "ratio": 95.61
     },
     "449450": {
-      "current_price": 69960,
+      "current_price": 69040,
       "all_time_high": 71180,
       "all_time_high_date": "2026-02-04",
-      "ratio": 98.29
+      "ratio": 96.99
     },
     "411060": {
-      "current_price": 33575,
+      "current_price": 33760,
       "all_time_high": 37890,
       "all_time_high_date": "2026-01-29",
-      "ratio": 88.61
+      "ratio": 89.1
     },
     "005930": {
-      "current_price": 193000,
+      "current_price": 195600,
       "all_time_high": 197600,
       "all_time_high_date": "2026-02-23",
-      "ratio": 97.67
+      "ratio": 98.99
     }
   }
 }
