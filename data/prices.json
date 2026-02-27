@@ -1,65 +1,65 @@
 {
-  "updated_at": "2026-02-27 01:20:51",
+  "updated_at": "2026-02-27 04:07:32",
   "prices": {
     "000660": {
-      "current_price": 1052000,
+      "current_price": 1072000,
       "all_time_high": 1099000,
       "all_time_high_date": "2026-02-26",
-      "ratio": 95.72
+      "ratio": 97.54
     },
     "028260": {
-      "current_price": 348500,
+      "current_price": 351500,
       "all_time_high": 364000,
       "all_time_high_date": "2026-02-26",
-      "ratio": 95.74
+      "ratio": 96.57
     },
     "064350": {
-      "current_price": 226500,
+      "current_price": 236750,
       "all_time_high": 249500,
       "all_time_high_date": "2025-10-23",
-      "ratio": 90.78
+      "ratio": 94.89
     },
     "079550": {
-      "current_price": 523000,
+      "current_price": 517000,
       "all_time_high": 650000,
       "all_time_high_date": "2025-06-23",
-      "ratio": 80.46
+      "ratio": 79.54
     },
     "140860": {
-      "current_price": 281000,
+      "current_price": 284000,
       "all_time_high": 321500,
       "all_time_high_date": "2026-01-29",
-      "ratio": 87.4
+      "ratio": 88.34
     },
     "469160": {
-      "current_price": 21885,
+      "current_price": 21990,
       "all_time_high": 22985,
       "all_time_high_date": "2026-02-19",
-      "ratio": 95.21
+      "ratio": 95.67
     },
     "449450": {
-      "current_price": 71260,
-      "all_time_high": 71955,
+      "current_price": 72015,
+      "all_time_high": 72765,
       "all_time_high_date": "2026-02-27",
-      "ratio": 99.03
+      "ratio": 98.97
     },
     "411060": {
-      "current_price": 33390,
+      "current_price": 33425,
       "all_time_high": 37890,
       "all_time_high_date": "2026-01-29",
-      "ratio": 88.12
+      "ratio": 88.22
     },
     "005930": {
-      "current_price": 213500,
+      "current_price": 217500,
       "all_time_high": 220000,
       "all_time_high_date": "2026-02-27",
-      "ratio": 97.05
+      "ratio": 98.86
     },
     "161510": {
-      "current_price": 28540,
+      "current_price": 29020,
       "all_time_high": 30291,
       "all_time_high_date": "2026-02-23",
-      "ratio": 94.22
+      "ratio": 95.8
     }
   }
 }
