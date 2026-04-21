@@ -1,29 +1,29 @@
 {
-  "updated_at": "2026-04-21 00:24:16",
+  "updated_at": "2026-04-21 03:03:15",
   "prices": {
     "000660": {
-      "current_price": 1207000,
-      "all_time_high": 1217000,
+      "current_price": 1215500,
+      "all_time_high": 1227000,
       "all_time_high_date": "2026-04-21",
-      "ratio": 99.18
+      "ratio": 99.06
     },
     "028260": {
-      "current_price": 304500,
+      "current_price": 303000,
       "all_time_high": 364000,
       "all_time_high_date": "2026-02-26",
-      "ratio": 83.65
+      "ratio": 83.24
     },
     "064350": {
-      "current_price": 218500,
+      "current_price": 219500,
       "all_time_high": 274000,
       "all_time_high_date": "2026-03-03",
-      "ratio": 79.74
+      "ratio": 80.11
     },
     "079550": {
-      "current_price": 926000,
+      "current_price": 905000,
       "all_time_high": 979000,
       "all_time_high_date": "2026-04-13",
-      "ratio": 94.59
+      "ratio": 92.44
     },
     "140860": {
       "current_price": 276500,
@@ -32,34 +32,34 @@
       "ratio": 86.0
     },
     "469160": {
-      "current_price": 23990,
+      "current_price": 23900,
       "all_time_high": 24885,
       "all_time_high_date": "2026-04-15",
-      "ratio": 96.4
+      "ratio": 96.04
     },
     "449450": {
-      "current_price": 78455,
+      "current_price": 77755,
       "all_time_high": 88030,
       "all_time_high_date": "2026-03-04",
-      "ratio": 89.12
+      "ratio": 88.33
     },
     "411060": {
-      "current_price": 31830,
+      "current_price": 31705,
       "all_time_high": 37890,
       "all_time_high_date": "2026-01-29",
-      "ratio": 84.01
+      "ratio": 83.68
     },
     "005930": {
-      "current_price": 218750,
+      "current_price": 217750,
       "all_time_high": 223000,
       "all_time_high_date": "2026-02-27",
-      "ratio": 98.09
+      "ratio": 97.65
     },
     "161510": {
-      "current_price": 27570,
+      "current_price": 27545,
       "all_time_high": 30192,
       "all_time_high_date": "2026-02-23",
-      "ratio": 91.32
+      "ratio": 91.23
     }
   }
 }
