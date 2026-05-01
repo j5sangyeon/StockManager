@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-04-30 06:51:12",
+  "updated_at": "2026-05-01 00:30:58",
   "prices": {
     "000660": {
       "current_price": 1286000,
@@ -15,9 +15,9 @@
     },
     "064350": {
       "current_price": 268500,
-      "all_time_high": 274000,
-      "all_time_high_date": "2026-03-03",
-      "ratio": 97.99
+      "all_time_high": 282000,
+      "all_time_high_date": "2026-04-30",
+      "ratio": 95.21
     },
     "079550": {
       "current_price": 941000,
@@ -51,9 +51,9 @@
     },
     "005930": {
       "current_price": 220500,
-      "all_time_high": 229500,
-      "all_time_high_date": "2026-04-23",
-      "ratio": 96.08
+      "all_time_high": 230000,
+      "all_time_high_date": "2026-04-30",
+      "ratio": 95.87
     },
     "161510": {
       "current_price": 27165,
