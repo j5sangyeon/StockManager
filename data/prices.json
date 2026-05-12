@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-05-12 05:12:47",
+  "updated_at": "2026-05-12 06:56:24",
   "prices": {
     "000660": {
       "current_price": 1835000,
@@ -8,58 +8,58 @@
       "ratio": 93.29
     },
     "028260": {
-      "current_price": 435500,
+      "current_price": 435000,
       "all_time_high": 480000,
       "all_time_high_date": "2026-05-11",
-      "ratio": 90.73
+      "ratio": 90.62
     },
     "064350": {
-      "current_price": 214000,
+      "current_price": 215000,
       "all_time_high": 282000,
       "all_time_high_date": "2026-04-30",
-      "ratio": 75.89
+      "ratio": 76.24
     },
     "079550": {
-      "current_price": 876000,
+      "current_price": 879000,
       "all_time_high": 1118000,
       "all_time_high_date": "2026-04-22",
-      "ratio": 78.35
+      "ratio": 78.62
     },
     "140860": {
-      "current_price": 310500,
+      "current_price": 298500,
       "all_time_high": 350500,
       "all_time_high_date": "2026-05-12",
-      "ratio": 88.59
+      "ratio": 85.16
     },
     "469160": {
-      "current_price": 27750,
+      "current_price": 27855,
       "all_time_high": 28995,
       "all_time_high_date": "2026-05-11",
-      "ratio": 95.71
+      "ratio": 96.07
     },
     "449450": {
-      "current_price": 71845,
+      "current_price": 72475,
       "all_time_high": 88030,
       "all_time_high_date": "2026-03-04",
-      "ratio": 81.61
+      "ratio": 82.33
     },
     "411060": {
-      "current_price": 31085,
+      "current_price": 31035,
       "all_time_high": 37890,
       "all_time_high_date": "2026-01-29",
-      "ratio": 82.04
+      "ratio": 81.91
     },
     "005930": {
-      "current_price": 274250,
+      "current_price": 279000,
       "all_time_high": 291500,
       "all_time_high_date": "2026-05-12",
-      "ratio": 94.08
+      "ratio": 95.71
     },
     "161510": {
-      "current_price": 27110,
+      "current_price": 27350,
       "all_time_high": 30192,
       "all_time_high_date": "2026-02-23",
-      "ratio": 89.79
+      "ratio": 90.59
     }
   }
 }
